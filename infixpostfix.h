@@ -8,13 +8,14 @@ inline bool isOperand(char c){
     else return false;
 }
 inline bool isOperator(char c){
-    if(c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/') return true;
+    if(c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '@') return true;
     else return false;
 }
-//operators * and / have higher priority than + and -
+//unary minus (@) has highest priority operator and operators * and / have higher priority than + and -
 int priority(char op){
     int p;
-    if(op == '*' || op == '/') p = 2;
+    if(op == '@') p = 3;
+    else if(op == '*' || op == '/') p = 2;
     else if(op == '+' || op == '-') p = 1;
     else p = 0;
     return p;
@@ -53,6 +54,7 @@ std::string InfixToPostfix(const std::string& infix){
             }
             //append empty space to seperate multidigit numbers
             postfix += " ";
+            //default, number is not negative
             //i now is at operator, but then in the for loop it increments and we will skip the operator, so decrement it
             i--;
         } 
@@ -69,6 +71,7 @@ std::string InfixToPostfix(const std::string& infix){
                 //now pop the left bracket from opstack
                 opstack.pop();
             }
+            else if(c == '-' && infix.at(i-1) == '(' ) opstack.push('@'); //if - is after (, then this - is unary
             else{
                 //if the operator has lower or same priority as opstack.top(), append every opstack element which
                 //has higher or same priority
@@ -115,28 +118,35 @@ double EvaluatePostfix(std::string postfix){
             i = j; //now i must be set to j to skip the already scanned number (its digits)
         }
         else if(isOperator(c)){
-            //now because c is operator, pop two operands from operandStack
-            op1 = operandStack.top();
-            operandStack.pop();
-            op2 = operandStack.top();
-            operandStack.pop();
-            //now examine the operation
-            switch(c){
-                case '+':
-                    result = (op1 + op2);
-                break;
-                case '-':
-                    result = (op2 - op1);
-                break;
-                case '*':
-                    result = (op1 * op2);
-                break;
-                case '/':
-                    result = (op2 / op1);
-                break;
+            //if c is @ (unary minus), pop the top operandStack element and push its negative
+            if(c == '@'){
+                double op = -operandStack.top();
+                operandStack.pop();
+                operandStack.push(op);
+            } else{
+                //now because c is operator, pop two operands from operandStack
+                op1 = operandStack.top();
+                operandStack.pop();
+                op2 = operandStack.top();
+                operandStack.pop();
+                //now examine the operation
+                switch(c){
+                    case '+':
+                        result = (op1 + op2);
+                    break;
+                    case '-':
+                        result = (op2 - op1);
+                    break;
+                    case '*':
+                        result = (op1 * op2);
+                    break;
+                    case '/':
+                        result = (op2 / op1);
+                    break;
+                }
+                //push the result back to operandStack
+                operandStack.push(result);
             }
-            //push the result back to operandStack
-            operandStack.push(result);
         }
     }
     //return the result of the expression which is the top element of operandStack
