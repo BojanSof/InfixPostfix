@@ -38,8 +38,9 @@ int priority(char op){
 std::string InfixToPostfix(const std::string& infix){
     std::string postfix = ""; //output string
     std::stack<char> opstack; //operator stack
-    
-    for(size_t i = 0; i < infix.length(); i++){
+    bool firstMinus = (infix.at(0) == '-') ? true : false;
+    size_t i = firstMinus ? 1 : 0; //if expression begins with -, start scanning characters from 1
+    for(; i < infix.length(); i++){
         char c = infix.at(i); //scaned character
         if(c == ' ') continue; //if c is space, skip this iteration
         //support multidigit numbers and decimals
@@ -54,7 +55,11 @@ std::string InfixToPostfix(const std::string& infix){
             }
             //append empty space to seperate multidigit numbers
             postfix += " ";
-            //default, number is not negative
+            //if expression began with minus and second character wasn't left bracket, append @(unary minus) to postfix
+            if(firstMinus && infix.at(1) != '('){
+                postfix +="@ ";
+                firstMinus = false;
+            }
             //i now is at operator, but then in the for loop it increments and we will skip the operator, so decrement it
             i--;
         } 
@@ -70,6 +75,11 @@ std::string InfixToPostfix(const std::string& infix){
                 }
                 //now pop the left bracket from opstack
                 opstack.pop();
+                //if infix expression began with -, append @ (unary minus) to postfix 
+                if(firstMinus){
+                    postfix += "@ ";
+                    firstMinus = false;
+                }
             }
             else if(c == '-' && infix.at(i-1) == '(' ) opstack.push('@'); //if - is after (, then this - is unary
             else{
