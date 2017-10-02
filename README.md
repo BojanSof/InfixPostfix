@@ -1,4 +1,4 @@
 # InfixPostfix
 Converting Infix expression to Postfix and evaluating it
 # TODO: 
- - Add support for expressions involving negative numbers, like -89*(-23)
+ - Add support for unary minus at beginning (expressions like -(3+6) )
